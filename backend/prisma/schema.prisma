@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  staff
+  hr
+  hod
+  admin
+}
+
+enum ReportType {
+  daily
+  weekly
+  monthly
+  annual
+}
+
+enum ReportStatus {
+  draft
+  submitted
+  reviewed
+  locked
+}
+
+enum NotificationType {
+  reminder
+  feedback
+  lock
+  unlock
+  deadline
+  system
+}
+
+enum DeadlineType {
+  daily
+  weekly
+  monthly
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  role         UserRole @default(staff)
+  departmentId String?   @map("department_id")
+  unitId       String?   @map("unit_id")
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLogin    DateTime? @map("last_login")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  department     Department?     @relation(fields: [departmentId], references: [id])
+  unit           Unit?           @relation(fields: [unitId], references: [id])
+  reports        Report[]
+  comments       Comment[]
+  notifications  Notification[]
+  lockedReports  Report[]        @relation("LockedBy")
+  editedVersions ReportVersion[] @relation("EditedBy")
+  compiledReports CompiledReport[]
+
+  @@map("users")
+}
+
+model Department {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  units      Unit[]
+  users      User[]
+  deadlines  Deadline[]
+
+  @@map("departments")
+}
+
+model Unit {
+  id           String   @id @default(uuid())
+  name         String
+  departmentId String   @map("department_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  department Department  @relation(fields: [departmentId], references: [id])
+  users      User[]
+  deadlines  Deadline[]
+
+  @@map("units")
+}
+
+model Report {
+  id           String       @id @default(uuid())
+  userId       String       @map("user_id")
+  type         ReportType
+  title        String?
+  content      Json
+  status       ReportStatus @default(draft)
+  date         DateTime
+  weekNumber   Int?         @map("week_number")
+  month        Int?
+  year         Int
+  isLocked     Boolean      @default(false) @map("is_locked")
+  lockedById   String?      @map("locked_by")
+  lockedAt     DateTime?    @map("locked_at")
+  deadline     DateTime?
+  submittedAt  DateTime?    @map("submitted_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  user        User            @relation(fields: [userId], references: [id])
+  lockedBy    User?           @relation("LockedBy", fields: [lockedById], references: [id])
+  versions    ReportVersion[]
+  comments    Comment[]
+  notifications Notification[]
+
+  @@index([userId, date])
+  @@index([userId, type, date])
+  @@index([status])
+  @@index([deadline])
+  @@map("reports")
+}
+
+model ReportVersion {
+  id          String   @id @default(uuid())
+  reportId    String   @map("report_id")
+  content     Json
+  editedById  String   @map("edited_by")
+  editReason  String?  @map("edit_reason")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  report   Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  editedBy User   @relation("EditedBy", fields: [editedById], references: [id])
+
+  @@map("report_versions")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  reportId  String   @map("report_id")
+  userId    String   @map("user_id")
+  parentId  String?  @map("parent_id")
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  report  Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id])
+  parent  Comment? @relation("CommentThread", fields: [parentId], references: [id])
+  replies Comment[] @relation("CommentThread")
+
+  @@index([reportId])
+  @@map("comments")
+}
+
+model CompiledReport {
+  id               String       @id @default(uuid())
+  userId           String       @map("user_id")
+  type             ReportType
+  title            String
+  content          Json
+  dateRangeStart   DateTime     @map("date_range_start")
+  dateRangeEnd     DateTime     @map("date_range_end")
+  includedReports  String[]     @map("included_reports")
+  status           ReportStatus @default(draft)
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("compiled_reports")
+}
+
+model Notification {
+  id              String           @id @default(uuid())
+  userId          String           @map("user_id")
+  type            NotificationType
+  title           String
+  message         String
+  isRead          Boolean          @default(false) @map("is_read")
+  relatedReportId String?          @map("related_report_id")
+  createdAt       DateTime         @default(now()) @map("created_at")
+
+  user  User   @relation(fields: [userId], references: [id])
+  report Report? @relation(fields: [relatedReportId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+model Deadline {
+  id            String       @id @default(uuid())
+  departmentId  String?      @map("department_id")
+  unitId        String?      @map("unit_id")
+  type          DeadlineType
+  deadlineTime  String       @map("deadline_time")
+  dayOfWeek     Int?         @map("day_of_week")
+  dayOfMonth    Int?         @map("day_of_month")
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  department Department? @relation(fields: [departmentId], references: [id])
+  unit       Unit?       @relation(fields: [unitId], references: [id])
+
+  @@map("deadlines")
+}
