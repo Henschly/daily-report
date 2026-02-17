@@ -49,6 +49,13 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/setup', async (req, res) => {
   try {
+    // Create enums
+    await prisma.$executeRaw`CREATE TYPE "UserRole" AS ENUM ('staff', 'hr', 'hod', 'admin')`;
+    await prisma.$executeRaw`CREATE TYPE "ReportType" AS ENUM ('daily', 'weekly', 'monthly', 'annual')`;
+    await prisma.$executeRaw`CREATE TYPE "ReportStatus" AS ENUM ('draft', 'submitted', 'reviewed', 'locked')`;
+    await prisma.$executeRaw`CREATE TYPE "NotificationType" AS ENUM ('reminder', 'feedback', 'lock', 'unlock', 'deadline', 'system')`;
+    await prisma.$executeRaw`CREATE TYPE "DeadlineType" AS ENUM ('daily', 'weekly', 'monthly')`;
+    
     // Create tables using raw SQL
     await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS users (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), email VARCHAR(255) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, first_name VARCHAR(100) NOT NULL, last_name VARCHAR(100) NOT NULL, role VARCHAR(20) DEFAULT 'staff', department_id UUID, unit_id UUID, is_active BOOLEAN DEFAULT true, last_login TIMESTAMP, created_at TIMESTAMP DEFAULT NOW(), updated_at TIMESTAMP DEFAULT NOW())`;
     await prisma.$executeRaw`CREATE TABLE IF NOT EXISTS departments (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), name VARCHAR(100) UNIQUE NOT NULL, description TEXT, created_at TIMESTAMP DEFAULT NOW())`;
