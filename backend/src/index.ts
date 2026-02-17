@@ -47,6 +47,39 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+app.get('/api/setup', async (req, res) => {
+  try {
+    await prisma.department.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000001' },
+      update: {},
+      create: { id: '00000000-0000-0000-0000-000000000001', name: 'Engineering', description: 'Software Engineering Department' },
+    });
+    await prisma.department.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000002' },
+      update: {},
+      create: { id: '00000000-0000-0000-0000-000000000002', name: 'Human Resources', description: 'Human Resources Department' },
+    });
+    await prisma.department.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000003' },
+      update: {},
+      create: { id: '00000000-0000-0000-0000-000000000003', name: 'Marketing', description: 'Marketing Department' },
+    });
+    await prisma.unit.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000010' },
+      update: {},
+      create: { id: '00000000-0000-0000-0000-000000000010', name: 'Frontend Team', departmentId: '00000000-0000-0000-0000-000000000001' },
+    });
+    await prisma.unit.upsert({
+      where: { id: '00000000-0000-0000-0000-000000000011' },
+      update: {},
+      create: { id: '00000000-0000-0000-0000-000000000011', name: 'Backend Team', departmentId: '00000000-0000-0000-0000-000000000001' },
+    });
+    res.json({ success: true, message: 'Database initialized' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: String(error) });
+  }
+});
+
 app.get('/', (req, res) => {
   res.redirect('http://localhost:5173');
 });
