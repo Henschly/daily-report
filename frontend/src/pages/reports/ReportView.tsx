@@ -10,7 +10,6 @@ import { format } from 'date-fns';
 
 export default function ReportView() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [report, setReport] = useState<Report | null>(null);
   const [versions, setVersions] = useState<ReportVersion[]>([]);
@@ -18,9 +17,6 @@ export default function ReportView() {
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [showVersions, setShowVersions] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editContent, setEditContent] = useState('');
-  const [editReason, setEditReason] = useState('');
 
   const editor = useEditor({
     extensions: [StarterKit, Image],
@@ -45,10 +41,7 @@ export default function ReportView() {
 
   const fetchReport = async () => {
     try {
-      const [reportRes, commentsRes] = await Promise.all([
-        api.get(`/reports/${id}`),
-        api.get(`/reports/${id}/comments`),
-      ]);
+      const reportRes = await api.get(`/reports/${id}`);
       setReport(reportRes.data.data);
       setComments(reportRes.data.data.comments || []);
     } catch (error) {
@@ -232,7 +225,7 @@ export default function ReportView() {
       {showVersions && versions.length > 0 && (
         <div className="card" style={{ marginBottom: '24px' }}>
           <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Edit History</h3>
-          {versions.map((version, index) => (
+          {versions.map((version) => (
             <div key={version.id} style={{ padding: '12px', borderBottom: '1px solid var(--color-border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <strong>{version.editedBy?.firstName} {version.editedBy?.lastName}</strong>

@@ -157,7 +157,6 @@ export default function ReportEditor() {
   const [report, setReport] = useState<Report | null>(null);
   const [reportType, setReportType] = useState<ReportType>('daily');
   const [reportDate, setReportDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 

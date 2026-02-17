@@ -29,7 +29,7 @@ export default function HODDashboard() {
 
       const myDeptUsers = usersRes.data.data.filter((u: User) => u.departmentId === user?.departmentId);
       const deptReports = allReports.filter((r: Report) => 
-        myDeptUsers.some((u) => u.id === r.userId)
+        myDeptUsers.some((u: User) => u.id === r.userId)
       );
 
       setStats({

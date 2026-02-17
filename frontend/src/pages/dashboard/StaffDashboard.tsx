@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import { Report } from '../../types';
-import { format, isToday } from 'date-fns';
+import { format } from 'date-fns';
 
 export default function StaffDashboard() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [todayReport, setTodayReport] = useState<Report | null>(null);
   const [recentReports, setRecentReports] = useState<Report[]>([]);
   const [stats, setStats] = useState({ weekly: 0, monthly: 0, pending: 0 });
@@ -19,10 +18,9 @@ export default function StaffDashboard() {
 
   const fetchData = async () => {
     try {
-      const [todayRes, reportsRes, statsRes] = await Promise.all([
+      const [todayRes, reportsRes] = await Promise.all([
         api.get('/reports/today'),
         api.get('/reports', { params: { limit: 10 } }),
-        api.get('/users/' + user?.id + '/reports', { params: { status: 'submitted' } }),
       ]);
       
       setTodayReport(todayRes.data.data);

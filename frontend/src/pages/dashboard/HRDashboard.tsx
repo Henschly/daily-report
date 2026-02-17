@@ -10,7 +10,6 @@ export default function HRDashboard() {
   const [stats, setStats] = useState({ total: 0, pending: 0, reviewed: 0, locked: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState({ status: '', departmentId: '' });
-  const [departments, setDepartments] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -21,15 +20,13 @@ export default function HRDashboard() {
       const params: any = { limit: 50 };
       if (filter.status) params.status = filter.status;
       
-      const [reportsRes, usersRes, deptRes] = await Promise.all([
+      const [reportsRes, usersRes] = await Promise.all([
         api.get('/reports', { params }),
         api.get('/users', { params: { limit: 100 } }),
-        api.get('/departments'),
       ]);
 
       setReports(reportsRes.data.data);
       setUsers(usersRes.data.data);
-      setDepartments(deptRes.data.data);
 
       const allReports = reportsRes.data.data;
       setStats({

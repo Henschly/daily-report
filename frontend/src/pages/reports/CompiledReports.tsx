@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { CompiledReport, ReportType } from '../../types';
 import { format } from 'date-fns';
