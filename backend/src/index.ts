@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import { config } from './config/index.js';
 import { cronService } from './services/cron.service.js';
 import { AppError } from './utils/AppError.js';
+import prisma from './config/prisma.js';
 
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
@@ -14,6 +15,16 @@ import deadlineRoutes from './routes/deadline.routes.js';
 import departmentRoutes from './routes/department.routes.js';
 
 const app = express();
+
+async function syncDatabase() {
+  try {
+    await prisma.$connect();
+    console.log('Database connected');
+  } catch (error) {
+    console.error('Database connection failed:', error);
+  }
+}
+syncDatabase();
 
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
