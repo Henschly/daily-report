@@ -33,7 +33,6 @@ export default function Layout() {
 
   const isHR = user?.role === 'hr' || user?.role === 'admin';
   const isHOD = user?.role === 'hod';
-  const isStaff = user?.role === 'staff';
 
   return (
     <div className="layout">

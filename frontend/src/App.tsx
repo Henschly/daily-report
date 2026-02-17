@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
-import Dashboard from './pages/dashboard/Dashboard';
 import StaffDashboard from './pages/dashboard/StaffDashboard';
 import HRDashboard from './pages/dashboard/HRDashboard';
 import HODDashboard from './pages/dashboard/HODDashboard';
